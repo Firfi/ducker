@@ -1,0 +1,32 @@
+{
+  "name": "ducker",
+  "version": "0.0.1",
+  "description": "Ducker is Fwendly function parameters validation library for JS ",
+  "main": "src/ducker.js",
+  "directories": {
+    "test": "test"
+  },
+  "dependencies": {
+
+  },
+  "devDependencies": {
+    "requirejs": "~2.1.15",
+    "gulp-jasmine": "~1.0.1",
+    "karma-phantomjs-launcher": "~0.1.4",
+    "lodash": "~2.4.1",
+    "gulp": "~3.8.10",
+    "jasmine-core": "~2.1.3"
+  },
+  "scripts": {
+    "test": "gulp test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/Firfi/ducker.git"
+  },
+  "author": "Firfi",
+  "license": "BSD-2-Clause",
+  "bugs": {
+    "url": "https://github.com/Firfi/ducker/issues"
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "name": "ducker",
+  "version": "0.0.1",
+  "main": "src/ducker.js",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+  }
+}
