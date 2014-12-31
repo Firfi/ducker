@@ -52,35 +52,103 @@
     'arrayOfStringsOption': ['string'],
     'intOption': 'int',
     'objectWithIntOption': {
-      'intOption': 'int' // TODO add dot syntax
+      'intOption': 'int!' // TODO add dot syntax
     }
   };
 
+  // utils
+  var toObject = function(arr) {
+    var rv = {};
+    for (var i = 0; i < arr.length; ++i)
+      rv[i] = arr[i];
+    return rv;
+  };
+  var isObject = function(o) {
+    return o !== null && typeof o === 'object';
+  };
+  var paramIsRequired = function(param) {
+    return (typeof param === 'string' && param.slice(-1) === '!') || !!param[DUCKER_REQUIRED_PARAM];
+  };
+
+  var DUCKER_REQUIRED_PARAM = '__ducker__required';
+
+  // this is the function that propagates special required! property to parents if children have it. it works only for objects ignoring arrays
+  // because it's unclear for arrays which is required!, array itself or array members (and how much of them is required)
+  // mutates the input
+  var prehandledRequired = function(paramTypes) {
+    var _prehandledRequired = function(pt, parents) { // parents are links on different nodes of res
+      Object.keys(pt).map(function(k) {
+        var child = pt[k];
+        if (isObject(child)) {
+          _prehandledRequired(child, parents.concat([pt]))
+        } else {
+          if (paramIsRequired(child)) {
+            pt[DUCKER_REQUIRED_PARAM] = true;
+            parents.forEach(function(parent) {
+              parent[DUCKER_REQUIRED_PARAM] = true;
+            });
+          }
+        }
+      });
+    };
+    _prehandledRequired(paramTypes, []);
+  };
+
   ducker.validate = function(opts, paramTypes, validators) {
+    paramTypes = JSON.parse(JSON.stringify(paramTypes)); // we mutate it later.
+
     opts = opts || {};
     validators = assign(validators || {}, defaultValidators);
     var _validate = function(opts, paramTypes, validationsBreadcrumbs) {
       var errors = Object.keys(paramTypes).map(function(paramName) {
-        var validationType = paramTypes[paramName];
-        var required = validationType.slice(-1) === '!'; // param is necessary
-        if (required) validationType = validationType.substr(0, validationType.length - 1); // remove '!'
-        // TODO options to properties?
-        var validationFun = validators[validationType]; // TODO array support! object support!
-        var optValue = opts[paramName];
-        if (optValue === undefined && !required) {return false;}
-        var valid = validationFun(optValue);
-        if (valid) return false; // falsy value because error will be 'truly'
-        else {
-          //var bc = validationsBreadcrumbs.join('.'); // no. what if user has array keys with .dots. Really, he can.
-          //if (bc !== '') bc += '.'; // it isn't root
+        if (paramName === DUCKER_REQUIRED_PARAM) { return []; }
+        var _validationType = paramTypes[paramName];
+        var _mkError = function() {
+          // TODO option for string errors or object errors
           return [[validationsBreadcrumbs, paramName].reduce(function(a, b) { // <> .flatten
             return a.concat(b);
-          }), validationType]; // TODO and validationname, well, it coud've been object so let's fetch error right here
+          }), _validationType];
+        };
+        var validateArray = Array.isArray(_validationType); // harvest sugar for array
+        //if (validateArray) validationType = validationType[0];
+        var required = paramIsRequired(_validationType);
+        var validationType = ( required && typeof _validationType === 'string' ) ?
+          _validationType.substr(0, _validationType.length - 1) : _validationType; // remove '!'
+        var optValue = opts[paramName];
+        if (optValue === undefined && !required) {return false;}
+        if (validateArray) { // let's convert it to object and then handle as an object
+          // it should be array at least
+          if (!Array.isArray(optValue)) return _mkError();
+          optValue = toObject(optValue);
+          // TODO defaultValue() optimisation
+          // here we transform ['string'] to {0: 'string', 1: 'string', ...} to recursive call later
+          var validationTypeOld = validationType;
+          validationType = assign({}, optValue);
+          Object.keys(validationType).forEach(function(i) {
+            validationType[i] = validationTypeOld[0];
+          });
         }
-      }).filter(function(e) {return !!e}); // TODO check if there's too many options
-      // TODO option for string errors or object errors
+        if (isObject(validationType)) { // we should go recursively
+          if (!isObject(optValue)) { // but we can't and we're in dead end
+            return _mkError();
+          } else {
+            return _validate(optValue, validationType, validationsBreadcrumbs.concat([paramName])).reduce(function(a, b) { // <> .flatten
+              return a.concat(b);
+            }, []);
+          }
+        } else {
+          // we're at root at least
+          var validationFun = validators[validationType];
+
+          var valid = validationFun(optValue);
+          if (valid) return [];
+          else return _mkError();
+        }
+      }).filter(function(e) {return !!e.length}); // TODO check if there's too many options
       return errors;
     };
+    // prehandle param types adding required! to parents that have required! children
+    prehandledRequired(paramTypes);
     return _validate(opts, paramTypes, []);
   };
 
