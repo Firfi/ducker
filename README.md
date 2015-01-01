@@ -1,3 +1,5 @@
+![travis](https://travis-ci.org/Firfi/ducker.svg?branch=master)
+
 Ducker is a library created for purpose of function parameters object validation.
 
 `bower install ducker --save`
