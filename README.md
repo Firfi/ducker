@@ -6,7 +6,7 @@ Ducker is a library created for purpose of function parameters object validation
 
 You have a `function(params)` where params is an object that you would like to validate.
 
-On validation it returns array of errors (no exceptions or nulls, these're for pussies) which is empty if everything is ok.
+On validation ducker returns array of errors (no exceptions or nulls, these're for pussies) which is empty if everything is ok.
 
 Errors consists paths to invalid param and the name of validator so you can handle it as you like and have pretty error message, or ugly if that's yur choice.
 
