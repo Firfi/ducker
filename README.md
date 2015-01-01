@@ -1,6 +1,7 @@
 Ducker is a library created for purpose of function parameters object validation.
 
 `bower install ducker --save`
+
 `<script src="bower_components/ducker/dist/ducker.min.js"></script>`
 
 You have a `function(params)` where params is an object that you would like to validate.
