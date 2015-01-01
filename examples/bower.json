@@ -3,6 +3,6 @@
   "version": "0.0.1",
   "ignore": [],
   "dependencies": {
-    "ducker": "Firfi/ducker"
+    "ducker": "0.1.0"
   }
 }
