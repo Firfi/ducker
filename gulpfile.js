@@ -32,11 +32,12 @@ gulp.task('bump', function() {
 });
 
 gulp.task('dist', function() {
-  gulp.src(__dirname + '/src/*.js').pipe(rename({
-    suffix: '.min'
-  })).pipe(uglify({
-    'outSourceMap': true
-  })).pipe(gulp.dest(__dirname + '/dist'));
+  gulp.src(__dirname + '/src/*.js')
+    .pipe(gulp.dest(__dirname + '/dist'))
+    .pipe(uglify('ducker.min.js', {
+      'outSourceMap': true
+    }))
+    .pipe(gulp.dest(__dirname + '/dist'));
 });
 
 gulp.task('build', ['bump', 'dist']);
