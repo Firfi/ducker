@@ -8,7 +8,7 @@
     "test",
     "src",
     ".bower.json",
-    "gulpfile",
+    "gulpfile.js",
     "karma.conf.js",
     "package.json",
     "README.md",
