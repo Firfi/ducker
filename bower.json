@@ -3,7 +3,6 @@
   "version": "0.1.0",
   "main": "dist/ducker.min.js",
   "ignore": [
-    "**/.*",
     "node_modules",
     "bower_components",
     "test",
@@ -12,7 +11,8 @@
     "gulpfile",
     "karma.conf.js",
     "package.json",
-    "README.md"
+    "README.md",
+    "examples"
   ],
   "dependencies": {}
 }
