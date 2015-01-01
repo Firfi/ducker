@@ -1,4 +1,4 @@
-![travis](https://travis-ci.org/Firfi/ducker.svg?branch=master)
+[![Build Status](https://travis-ci.org/Firfi/ducker.svg?branch=master)](https://travis-ci.org/Firfi/ducker)
 
 Ducker is a library created for purpose of function parameters object validation.
 
