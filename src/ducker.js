@@ -24,6 +24,11 @@
     return this; // TODO call of ducker() returns another instance with prepassed params
   };
 
+  ducker.registerValidator = function(name, fun) {
+    if (_validators[name]) console.warn('validator ' + name + ' already exist, overwriting');
+    _validators[name] = fun;
+  };
+
   if (typeof root.exports !== 'undefined') {
     if (typeof module !== 'undefined' && module.exports) {
       root.exports = module.exports = ducker;
@@ -33,15 +38,16 @@
     root.ducker = ducker;
   }
 
-// TODO registerType()
   var defaultValidators = { // TODO what if null? handle it same as param not exist
     'string': function(o) { return typeof o === 'string'; },
     'int': function(o) { return this.number(o) && (o === parseInt(o, 10)); },
     'number': function(o) { return typeof o === 'number'; }
   };
 
+  var _validators = assign({}, defaultValidators);
+
   ducker.getValidator = function(name) {
-    return defaultValidators[name];
+    return _validators[name];
   };
 
   // TODO check if all types are present
@@ -117,7 +123,7 @@
     paramTypes = JSON.parse(JSON.stringify(paramTypes)); // we mutate it later.
 
     opts = opts || {};
-    validators = assign(validators || {}, defaultValidators);
+    validators = assign(_validators, validators || {}); // add passed validators and mixin existing validations with passed validators priority
     var _validate = function(opts, paramTypes, validationsBreadcrumbs) {
       var errors = Object.keys(paramTypes).map(function(paramName) {
         if (paramName === DUCKER_REQUIRED_PARAM) { return false; }
