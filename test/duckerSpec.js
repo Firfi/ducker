@@ -18,6 +18,12 @@ describe('ducker', function() {
       ).toBe(1);
     });
 
+    it('returns an array of arrays of {path: ..., ...} for error and path here have a one breadcrumb for one-level wrong property', function() {
+      var path = ducker.validate({'someStringParam': 42}, paramTypes)[0].path;
+      expect(path.length).toBe(1);
+      expect(path[0]).toBe('someStringParam')
+    });
+
     it('by default, returns empty array if param is not provided', function() {
       expect(
         ducker.validate({}, paramTypes).length
@@ -74,14 +80,14 @@ describe('ducker', function() {
         ducker.validate({
           'someArrayOfStringsParam': [1, 2]
         }, paramTypes).length
-      ).toBe(1);
+      ).toBe(2);
     });
     it('returns array with three items if param have three non-legit values and some number of legit ones', function() {
       expect(
         ducker.validate({
           'someArrayOfStringsParam': [1, 2, 'legit', 'legit', 2, 'legit!']
         }, paramTypes).length
-      ).toBe(1);
+      ).toBe(3);
     });
   });
 
@@ -109,6 +115,101 @@ describe('ducker', function() {
 
         }, paramTypes).length
       ).toBe(0);
+    });
+
+    it('returns a sequence of object params as a path if there is invalid value', function() {
+      var res = ducker.validate({
+        'objectOfSomeParams': {
+          'someStringParam': 42
+        }
+      }, paramTypes);
+      expect(res.length).toBe(1);
+      expect(res[0].path).toEqual(['objectOfSomeParams', 'someStringParam']);
+    });
+
+    describe('and there is three levels of params', function() {
+      var paramTypes = {
+        'objectOfSomeParams': {
+          'objectOfSomeParams2': {'someStringParam': 'string'}
+        }
+      };
+      it('returns a sequence of object params as a path if there is invalid value', function() {
+        var res = ducker.validate({
+          'objectOfSomeParams': {
+            'objectOfSomeParams2': {
+              'someStringParam': 42
+            }
+          }
+        }, paramTypes);
+        expect(res.length).toBe(1);
+        expect(res[0].path).toEqual(['objectOfSomeParams', 'objectOfSomeParams2', 'someStringParam']);
+      });
+    });
+
+    describe('and there is array param used', function() {
+      var paramTypes = {
+        'objectOfSomeParams': {
+          'objectOfSomeParams2': {'someArrayOfStringsParams': ['string']}
+        }
+      };
+      it('returns a sequence of object params as a path and also use array index there if there is invalid value in array', function() {
+        var res = ducker.validate({
+          'objectOfSomeParams': {
+            'objectOfSomeParams2': {
+              'someArrayOfStringsParams': ['validString1', 42, 'validString2', 43]
+            }
+          }
+        }, paramTypes);
+        expect(res.length).toBe(2);
+        expect(res[0].path).toEqual(['objectOfSomeParams', 'objectOfSomeParams2', 'someArrayOfStringsParams', '1']);
+        expect(res[1].path).toEqual(['objectOfSomeParams', 'objectOfSomeParams2', 'someArrayOfStringsParams', '3']);
+      });
+      describe('and this array consists objects', function() {
+        var paramTypes = {
+          'objectOfSomeParams': {
+            'objectOfSomeParams2': {'someArrayOfObjectsParam': [{
+              'someStringParam': 'string'
+            }]}
+          }
+        };
+        it('have error path legit', function() {
+          var res = ducker.validate({
+            'objectOfSomeParams': {
+              'objectOfSomeParams2': {
+                'someArrayOfObjectsParam': [{
+                  'someStringParam': 42
+                }]
+              }
+            }
+          }, paramTypes);
+          expect(res.length).toBe(1);
+          expect(res[0].path).toEqual(['objectOfSomeParams', 'objectOfSomeParams2', 'someArrayOfObjectsParam', '0', 'someStringParam']);
+        });
+      });
+      describe('and these object CONSIST ARRAYS', function() {
+        var paramTypes = {
+          'objectOfSomeParams': {
+            'objectOfSomeParams2': {
+              'someArrayOfObjectsParam': [{
+                'someArrayOfStringsParam': ['string']
+              }]
+            }
+          }
+        };
+        it('have error path legit', function() {
+          var res = ducker.validate({
+            'objectOfSomeParams': {
+              'objectOfSomeParams2': {
+                'someArrayOfObjectsParam': [{
+                  'someArrayOfStringsParam': [42]
+                }]
+              }
+            }
+          }, paramTypes);
+          expect(res.length).toBe(1);
+          expect(res[0].path).toEqual(['objectOfSomeParams', 'objectOfSomeParams2', 'someArrayOfObjectsParam', '0', 'someArrayOfStringsParam', '0']);
+        });
+      });
     });
 
     describe('which are required', function() {

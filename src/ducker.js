@@ -69,6 +69,25 @@
   var paramIsRequired = function(param) {
     return (typeof param === 'string' && param.slice(-1) === '!') || !!param[DUCKER_REQUIRED_PARAM];
   };
+  // flatten util stolen from underscore https://github.com/jashkenas/underscore/blob/master/underscore.js
+  var flatten = function(input, shallow, strict, startIndex) {
+    var output = [], idx = 0, value;
+    for (var i = startIndex || 0, length = input && input.length; i < length; i++) {
+      value = input[i];
+      if (value && value.length >= 0 && (_.isArray(value) || _.isArguments(value))) {
+        //flatten current level of array or arguments object
+        if (!shallow) value = flatten(value, shallow, strict);
+        var j = 0, len = value.length;
+        output.length += len;
+        while (j < len) {
+          output[idx++] = value[j++];
+        }
+      } else if (!strict) {
+        output[idx++] = value;
+      }
+    }
+    return output;
+  };
 
   var DUCKER_REQUIRED_PARAM = '__ducker__required';
 
@@ -101,13 +120,11 @@
     validators = assign(validators || {}, defaultValidators);
     var _validate = function(opts, paramTypes, validationsBreadcrumbs) {
       var errors = Object.keys(paramTypes).map(function(paramName) {
-        if (paramName === DUCKER_REQUIRED_PARAM) { return []; }
-        var _validationType = paramTypes[paramName];
+        if (paramName === DUCKER_REQUIRED_PARAM) { return false; }
+        var _validationType = paramTypes[paramName]; // have original validationType as we'll need it in error function but will use another validationType form later without '!' for required params
         var _mkError = function() {
           // TODO option for string errors or object errors
-          return [[validationsBreadcrumbs, paramName].reduce(function(a, b) { // <> .flatten
-            return a.concat(b);
-          }), _validationType];
+          return {path: validationsBreadcrumbs.concat([paramName]), validation: _validationType};
         };
         var validateArray = Array.isArray(_validationType); // harvest sugar for array
         //if (validateArray) validationType = validationType[0];
@@ -132,20 +149,19 @@
           if (!isObject(optValue)) { // but we can't and we're in dead end
             return _mkError();
           } else {
-            return _validate(optValue, validationType, validationsBreadcrumbs.concat([paramName])).reduce(function(a, b) { // <> .flatten
-              return a.concat(b);
-            }, []);
+            return _validate(optValue, validationType, validationsBreadcrumbs.concat([paramName]));
           }
         } else {
-          // we're at root at least
+          // we're at root at last
           var validationFun = validators[validationType];
 
           var valid = validationFun(optValue);
-          if (valid) return [];
+          if (valid) return false;
           else return _mkError();
         }
-      }).filter(function(e) {return !!e.length}); // TODO check if there's too many options
-      return errors;
+      });
+      // on this stage we have array of [possible another arrays recursively] errors, so flatten it and then filter for 'valid' === falsy values
+      return flatten(errors).filter(function(e) {return !!e}); // TODO check if there's too many options
     };
     // prehandle param types adding required! to parents that have required! children
     prehandledRequired(paramTypes);
