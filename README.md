@@ -35,6 +35,7 @@ Inside function you describe types of params:
             'customStringValidator': function(s) { return s === 'customString'; }
         };
         var errors = ducker.validate(params, paramTypes, customValidators);
+        // return type [{path: ['path', 'to', 'invalid', 'property'], validation: 'validatorName'}]
     }
 ```
 
