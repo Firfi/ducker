@@ -232,4 +232,25 @@ describe('ducker', function() {
     });
   });
 
+  describe('have custom validations with registerValidator() function', function() {
+    ducker.registerValidator('number42validator', function(n) {
+      return n === 42;
+    });
+    var paramTypes = {
+      'customNumberParam': 'number42validator'
+    };
+    it('returns no errors if it is valid param', function() {
+      var res = ducker.validate({
+        'customNumberParam': 42
+      }, paramTypes);
+      expect(res.length).toBe(0);
+    });
+    it('returns some if it is invalid param', function() {
+      var res = ducker.validate({
+        'customNumberParam': 43
+      }, paramTypes);
+      expect(res.length).toBe(1);
+    });
+  });
+
 });
