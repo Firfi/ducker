@@ -1,21 +1,22 @@
 {
   "name": "ducker",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "Ducker is Fwendly function parameters validation library for JS ",
   "main": "src/ducker.js",
   "directories": {
     "test": "test"
   },
-  "dependencies": {
-
-  },
+  "dependencies": {},
   "devDependencies": {
     "requirejs": "~2.1.15",
     "gulp-jasmine": "~1.0.1",
     "karma-phantomjs-launcher": "~0.1.4",
     "lodash": "~2.4.1",
     "gulp": "~3.8.10",
-    "jasmine-core": "~2.1.3"
+    "jasmine-core": "~2.1.3",
+    "gulp-uglifyjs": "~0.5.0",
+    "gulp-bump": "~0.1.11",
+    "gulp-rename": "~1.2.0"
   },
   "scripts": {
     "test": "gulp test"

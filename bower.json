@@ -1,14 +1,18 @@
 {
   "name": "ducker",
-  "version": "0.0.1",
-  "main": "src/ducker.js",
+  "version": "0.1.0",
+  "main": "dist/ducker.min.js",
   "ignore": [
     "**/.*",
     "node_modules",
     "bower_components",
     "test",
-    "tests"
+    "src",
+    ".bower.json",
+    "gulpfile",
+    "karma.conf.js",
+    "package.json",
+    "README.md"
   ],
-  "dependencies": {
-  }
+  "dependencies": {}
 }

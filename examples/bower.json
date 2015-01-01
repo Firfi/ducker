@@ -1,0 +1,8 @@
+{
+  "name": "ducker-examples",
+  "version": "0.0.1",
+  "ignore": [],
+  "dependencies": {
+    "ducker": "Firfi/ducker"
+  }
+}
